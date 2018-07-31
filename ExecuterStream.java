@@ -1,3 +1,5 @@
+package softideas.funcs;
+class utils{
 public final Stream<?> getResultsInFuture(Supplier<?>... functors) {
         CompletableFuture[] promises = Stream.of(functors)
                 .map(CompletableFuture::supplyAsync)
@@ -9,13 +11,17 @@ public final Stream<?> getResultsInFuture(Supplier<?>... functors) {
                             .map(CompletableFuture::join)
                             .collect(Collectors.toList()))
                     .handle((results, ex) -> {
-                        logger.error("an error occurred during getting a future results", ex);
-                        return Collections.singleton(null);
+                        if (ex != null) {
+                            logger.error("an error occurred during getting a future results", ex);
+                            return new ArrayList<>();
+                        }
+                        return results;
                     })
                     .get()
                     .stream();
         } catch (InterruptedException | ExecutionException e) {
             logger.error("an error occurred during executing a function", e);
-            return null;
+            return Stream.of(null);
         }
     }
+}
